@@ -1,6 +1,7 @@
 import requests
 import time
 
+__all__ = ["init", "get_sounds", "Client", "InitError", "RequestError"]
 BASE_URL = "https://api.pushover.net/1/"
 MESSAGE_URL = BASE_URL + "messages.json"
 USER_URL = BASE_URL + "users/validate.json"
@@ -12,14 +13,16 @@ TOKEN = None
 
 def get_sounds():
     global SOUNDS
-    request = Request("get", SOUND_URL, {})
-    SOUNDS = request.answer["sounds"]
+    if not SOUNDS:
+        request = Request("get", SOUND_URL, {})
+        SOUNDS = request.answer["sounds"]
+    return SOUNDS
 
 def init(token, sound=False):
     global TOKEN
     TOKEN = token
     if sound:
-        get_sounds()
+        return get_sounds()
 
 class InitError(Exception):
 
