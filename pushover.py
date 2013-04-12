@@ -1,3 +1,5 @@
+#| /usr/bin/python2
+
 import requests
 import time
 
@@ -120,3 +122,23 @@ class Client:
                 payload[key] = value
 
         return MessageRequest(payload)
+
+
+if __name__ == "__main__":
+    from argparse import ArgumentParser
+    parser = ArgumentParser(description="Send a message to pushover.")
+    parser.add_argument("--token", help="Pushover application token",
+                        required=True)
+    parser.add_argument("--client", "-c", help="Pushover client ID",
+                        required=True)
+    parser.add_argument("message", help="message to send")
+    parser.add_argument("--title", "-t", help="message title")
+    parser.add_argument("--priority", "-p", help="message priority")
+    parser.add_argument("--url", help="additional url")
+    parser.add_argument("--url-title", help="additional url title")
+
+    args = parser.parse_args()
+    init(args.token)
+    Client(args.client).send_message(args.message, title=args.title,
+                                     priority=args.priority, url=args.url,
+                                     url_title=args.url_title, timestamp=True)
