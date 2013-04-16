@@ -1,7 +1,4 @@
-""" This modules aims at being a comprehensive implementation of the Pushover
-API as described at https://pushover.net/api.
-
-After being imported, the module must be initialize by calling the :func:`init`
+"""After being imported, the module must be initialized by calling the :func:`init`
 function with a valid application token before sending messages.
 
 A typical use of the module looks like this::
