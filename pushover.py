@@ -193,7 +193,7 @@ class Client:
                 raise ValueError("{0}: invalid message parameter".format(key))
 
             if key == "timestamp" and value:
-                payload[key] = time.time()
+                payload[key] = int(time.time())
             elif key == "sound":
                 if not SOUNDS:
                     get_sounds()
