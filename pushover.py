@@ -192,7 +192,7 @@ class Client:
             if key not in valid_keywords:
                 raise ValueError("{0}: invalid message parameter".format(key))
 
-            if key == "timestamp" and value:
+            if key == "timestamp" and value == True:
                 payload[key] = int(time.time())
             elif key == "sound":
                 if not SOUNDS:
