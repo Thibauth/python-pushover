@@ -14,7 +14,7 @@ import requests
 import time
 
 __all__ = ["init", "get_sounds", "Client", "MessageRequest",
-           "InitError", "RequestError"]
+           "InitError", "RequestError", "get_client"]
 
 BASE_URL = "https://api.pushover.net/1/"
 MESSAGE_URL = BASE_URL + "messages.json"
@@ -206,6 +206,40 @@ class Client:
 
         return MessageRequest(payload)
 
+def get_client(user=None, config_path='~/.pushover'):
+    """Create a :class:`Client` object from a default configuration file.
+    
+    e.g.
+    ```
+    #This is the default user (returned by get_client() with no arguments.)
+    [Pushover]
+    user_key=xxxxxx
+    
+    # You can specify a device as well.
+    [Sam-iPhone]
+    user_key=yyyyyy
+    device=iPhone
+    ```
+    
+    * ``user``: the profile to load as a client (`Pushover` by default.)
+    * ``config_path``: path of the configuration file (`~/.pushover` by default.)
+    """
+    import ConfigParser
+    import os
+
+    config_path = os.path.expanduser(config_path)
+
+    if not os.path.exists(config_path):
+        raise Exception("Configuration file not found ({0})".format(config_path))
+    
+    config = ConfigParser.RawConfigParser()
+    config.read(config_path)
+
+    section = user if user is not None else 'Pushover'
+    return Client(
+        config.get(section, 'user_key'),
+        device=config.get(section, 'device') if config.has_option(section, 'device') else None
+    )
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
