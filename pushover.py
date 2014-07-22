@@ -206,13 +206,13 @@ class Client:
 
         return MessageRequest(payload)
 
-def get_client(user=None, config_path='~/.pushover'):
+def get_client(profile=None, config_path='~/.pushover'):
     """Create a :class:`Client` object from a default configuration file.
     
     e.g.
     ```
-    #This is the default user (returned by get_client() with no arguments.)
-    [Pushover]
+    #This is the default profile (returned by get_client() with no arguments.)
+    [Default]
     user_key=xxxxxx
     
     # You can specify a device as well.
@@ -221,7 +221,7 @@ def get_client(user=None, config_path='~/.pushover'):
     device=iPhone
     ```
     
-    * ``user``: the profile to load as a client (`Pushover` by default.)
+    * ``profile``: the profile to load as a client (`Default` by default.)
     * ``config_path``: path of the configuration file (`~/.pushover` by default.)
     """
     import ConfigParser
@@ -235,7 +235,7 @@ def get_client(user=None, config_path='~/.pushover'):
     config = ConfigParser.RawConfigParser()
     config.read(config_path)
 
-    section = user if user is not None else 'Pushover'
+    section = profile if profile is not None else 'Default'
     return Client(
         config.get(section, 'user_key'),
         device=config.get(section, 'device') if config.has_option(section, 'device') else None
