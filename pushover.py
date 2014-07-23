@@ -86,7 +86,7 @@ class Request:
             raise RequestError(self.answer["errors"])
 
     def __str__(self):
-        print self.answer
+        return str(self.answer)
 
 class MessageRequest(Request):
     """Class representing a message request to the Pushover API. You do not
