@@ -213,10 +213,12 @@ def get_client(profile=None, config_path='~/.pushover'):
     ```
     #This is the default profile (returned by get_client() with no arguments.)
     [Default]
+    api_token=aaaaaa
     user_key=xxxxxx
     
     # You can specify a device as well.
     [Sam-iPhone]
+    api_token=bbbbbb
     user_key=yyyyyy
     device=iPhone
     ```
@@ -236,10 +238,14 @@ def get_client(profile=None, config_path='~/.pushover'):
     config.read(config_path)
 
     section = profile if profile is not None else 'Default'
+
+    init(config.get(section, 'api_token'), sound=False)
+
     return Client(
         config.get(section, 'user_key'),
         device=config.get(section, 'device') if config.has_option(section, 'device') else None
     )
+
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
