@@ -12,6 +12,8 @@ A typical use of the module looks like this::
 
 import requests
 import time
+from ConfigParser import RawConfigParser
+import os
 
 __all__ = ["init", "get_sounds", "Client", "MessageRequest",
            "InitError", "RequestError", "get_client"]
@@ -226,24 +228,23 @@ def get_client(profile=None, config_path='~/.pushover'):
     * ``profile``: the profile to load as a client (`Default` by default.)
     * ``config_path``: path of the configuration file (`~/.pushover` by default.)
     """
-    import ConfigParser
-    import os
+
 
     config_path = os.path.expanduser(config_path)
 
     if not os.path.exists(config_path):
-        raise Exception("Configuration file not found ({0})".format(config_path))
+        raise IOError(2, "No such file", config_path)
     
-    config = ConfigParser.RawConfigParser()
+    config = RawConfigParser({"device": None})
     config.read(config_path)
 
-    section = profile if profile is not None else 'Default'
+    section = profile or 'Default'
 
     init(config.get(section, 'api_token'), sound=False)
 
     return Client(
         config.get(section, 'user_key'),
-        device=config.get(section, 'device') if config.has_option(section, 'device') else None
+        device=config.get(section, 'device')
     )
 
 
