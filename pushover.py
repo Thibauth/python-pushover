@@ -12,9 +12,11 @@ A typical use of the module looks like this::
 
 import requests
 import time
+from ConfigParser import RawConfigParser
+import os
 
 __all__ = ["init", "get_sounds", "Client", "MessageRequest",
-           "InitError", "RequestError"]
+           "InitError", "RequestError", "get_client"]
 
 BASE_URL = "https://api.pushover.net/1/"
 MESSAGE_URL = BASE_URL + "messages.json"
@@ -205,6 +207,45 @@ class Client:
                 payload[key] = value
 
         return MessageRequest(payload)
+
+def get_client(profile=None, config_path='~/.pushover'):
+    """Create a :class:`Client` object from a default configuration file.
+    
+    e.g.
+    ```
+    #This is the default profile (returned by get_client() with no arguments.)
+    [Default]
+    api_token=aaaaaa
+    user_key=xxxxxx
+    
+    # You can specify a device as well.
+    [Sam-iPhone]
+    api_token=bbbbbb
+    user_key=yyyyyy
+    device=iPhone
+    ```
+    
+    * ``profile``: the profile to load as a client (`Default` by default.)
+    * ``config_path``: path of the configuration file (`~/.pushover` by default.)
+    """
+
+
+    config_path = os.path.expanduser(config_path)
+
+    if not os.path.exists(config_path):
+        raise IOError(2, "No such file", config_path)
+    
+    config = RawConfigParser({"device": None})
+    config.read(config_path)
+
+    section = profile or 'Default'
+
+    init(config.get(section, 'api_token'), sound=False)
+
+    return Client(
+        config.get(section, 'user_key'),
+        device=config.get(section, 'device')
+    )
 
 
 if __name__ == "__main__":
