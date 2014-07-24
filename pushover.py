@@ -6,7 +6,7 @@ A typical use of the module looks like this::
     import pushover
 
     pushover.init("token")
-    client = Client("client-id")
+    client = pushover.Client("client-id")
     client.send_message("Hello!", title="Hello", priority=1)
 """
 
@@ -210,21 +210,21 @@ class Client:
 
 def get_client(profile=None, config_path='~/.pushover'):
     """Create a :class:`Client` object from a default configuration file.
-    
+
     e.g.
     ```
     #This is the default profile (returned by get_client() with no arguments.)
     [Default]
     api_token=aaaaaa
     user_key=xxxxxx
-    
+
     # You can specify a device as well.
     [Sam-iPhone]
     api_token=bbbbbb
     user_key=yyyyyy
     device=iPhone
     ```
-    
+
     * ``profile``: the profile to load as a client (`Default` by default.)
     * ``config_path``: path of the configuration file (`~/.pushover` by default.)
     """
@@ -234,7 +234,7 @@ def get_client(profile=None, config_path='~/.pushover'):
 
     if not os.path.exists(config_path):
         raise IOError(2, "No such file", config_path)
-    
+
     config = RawConfigParser({"device": None})
     config.read(config_path)
 
