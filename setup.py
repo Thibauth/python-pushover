@@ -10,6 +10,6 @@ setup(name='python-pushover',
       author='Thibaut Horel',
       author_email='thibaut+pushover@gmail.com',
       py_modules=['pushover'],
-      requires=['requests'],
+      install_requires=['requests'],
       license='GNU GPLv3'
       )
