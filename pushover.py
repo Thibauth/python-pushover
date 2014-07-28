@@ -10,10 +10,12 @@ A typical use of the module looks like this::
     client.send_message("Hello!", title="Hello", priority=1)
 """
 
-import requests
 import time
 from ConfigParser import RawConfigParser
+from argparse import ArgumentParser
 import os
+
+import requests
 
 __all__ = ["init", "get_sounds", "Client", "MessageRequest",
            "InitError", "RequestError", "get_client"]
@@ -247,9 +249,7 @@ def get_client(profile=None, config_path='~/.pushover'):
         device=config.get(section, 'device')
     )
 
-
-if __name__ == "__main__":
-    from argparse import ArgumentParser
+def main():
     parser = ArgumentParser(description="Send a message to pushover.")
     parser.add_argument("--token", help="Pushover application token",
                         required=True)
@@ -266,3 +266,6 @@ if __name__ == "__main__":
     Client(args.client).send_message(args.message, title=args.title,
                                      priority=args.priority, url=args.url,
                                      url_title=args.url_title, timestamp=True)
+
+if __name__ == "__main__":
+    main()
