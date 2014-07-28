@@ -11,6 +11,6 @@ setup(name='python-pushover',
       author_email='thibaut+pushover@gmail.com',
       py_modules=['pushover'],
       entry_points={"console_scripts": ["pushover = pushover:main"]},
-      install_requires=['requests'],
+      install_requires=['requests>=1.0'],
       license='GNU GPLv3'
       )
