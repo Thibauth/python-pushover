@@ -232,7 +232,7 @@ def _get_config(profile='Default', config_path='~/.pushoverrc',
     config.read(config_path)
     params = {"user_key": None, "api_token": None, "device": None}
     try:
-        params.update(dict(config.get(profile)))
+        params.update(dict(config.items(profile)))
     except NoSectionError:
         pass
     if user_key:
