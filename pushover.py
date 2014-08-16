@@ -11,14 +11,14 @@ A typical use of the module looks like this::
 """
 
 import time
-from ConfigParser import RawConfigParser
+from ConfigParser import RawConfigParser, NoSectionError
 from argparse import ArgumentParser
 import os
 
 import requests
 
 __all__ = ["init", "get_sounds", "Client", "MessageRequest",
-           "InitError", "RequestError", "get_client"]
+           "InitError", "RequestError", "UserError"]
 
 BASE_URL = "https://api.pushover.net/1/"
 MESSAGE_URL = BASE_URL + "messages.json"
@@ -61,7 +61,17 @@ class InitError(Exception):
     """
 
     def __str__(self):
-        return "Init the pushover module by calling the init function"
+        return "No api_token provided. Init the pushover module by\
+                calling the init function"
+
+
+class UserError(Exception):
+    """Exception which is raised when initializing a :class:Client class
+    without specifying a :attr:`user_key`.
+    """
+
+    def __str__(self):
+        return "No user_key provided."
 
 
 class RequestError(Exception):
@@ -158,9 +168,13 @@ class Client:
       specified device.
     """
 
-    def __init__(self, user, device=None):
-        self.user = user
-        self.device = device
+    def __init__(self, user_key=None, device=None, api_token=None,
+                 config_path="~/.pushoverrc", profile="Default"):
+        params = _get_config(profile, config_path, user_key, api_token)
+        self.user_key = params["user_key"]
+        if not self.user_key:
+            raise UserError
+        self.device = params["device"]
         self.devices = []
 
     def verify(self, device=None):
@@ -169,7 +183,7 @@ class Client:
         :attr:`devices` attribute. Returns a boolean depending of the validity
         of the user.
         """
-        payload = {"user": self.user}
+        payload = {"user": self.user_key}
         device = device or self.device
         if device:
             payload["device"] = device
@@ -195,7 +209,7 @@ class Client:
                           "timestamp", "url", "url_title", "device",
                           "retry", "expire"]
 
-        payload = {"message": message, "user": self.user}
+        payload = {"message": message, "user": self.user_key}
         if self.device:
             payload["device"] = self.device
 
@@ -218,43 +232,27 @@ class Client:
         return MessageRequest(payload)
 
 
-def get_client(profile=None, config_path='~/.pushover'):
-    """Create a :class:`Client` object from a default configuration file.
-
-    e.g.
-    ```
-    #This is the default profile (returned by get_client() with no arguments.)
-    [Default]
-    api_token=aaaaaa
-    user_key=xxxxxx
-
-    # You can specify a device as well.
-    [Sam-iPhone]
-    api_token=bbbbbb
-    user_key=yyyyyy
-    device=iPhone
-    ```
-
-    * ``profile``: the profile to load as a client (`Default` by default.)
-    * ``config_path``: path of the configuration file (`~/.pushover` by
-    default.) """
-
+def _get_config(profile='Default', config_path='~/.pushoverrc',
+                user_key=None, api_token=None):
     config_path = os.path.expanduser(config_path)
-
-    if not os.path.exists(config_path):
-        raise IOError(2, "No such file", config_path)
-
-    config = RawConfigParser({"device": None})
+    config = RawConfigParser()
     config.read(config_path)
+    params = {"user_key": None, "api_token": None, "device": None}
+    try:
+        params.update(dict(config.get(profile)))
+    except NoSectionError:
+        pass
+    if user_key:
+        params["user_key"] = user_key
+    if api_token:
+        params["api_token"] = api_token
 
-    section = profile or 'Default'
+    if not TOKEN:
+        init(params["api_token"])
+        if not TOKEN:
+            raise InitError
 
-    init(config.get(section, 'api_token'), sound=False)
-
-    return Client(
-        config.get(section, 'user_key'),
-        device=config.get(section, 'device')
-    )
+    return params
 
 
 def main():
