@@ -1,5 +1,5 @@
-"""After being imported, the module must be initialized by calling the :func:`init`
-function with a valid application token before sending messages.
+"""After being imported, the module must be initialized by calling the
+:func:`init` function with a valid application token before sending messages.
 
 A typical use of the module looks like this::
 
@@ -29,6 +29,7 @@ RECEIPT_URL = BASE_URL + "receipts/"
 SOUNDS = None
 TOKEN = None
 
+
 def get_sounds():
     """Fetch and return a list of sounds (as a list of strings) recognized by
     Pushover and that can be used in a notification message.
@@ -42,6 +43,7 @@ def get_sounds():
         SOUNDS = request.answer["sounds"]
     return SOUNDS
 
+
 def init(token, sound=False):
     """Initialize the module by setting the application token which will be
     used to send messages. If ``sound`` is ``True`` also returns the list of
@@ -52,6 +54,7 @@ def init(token, sound=False):
     if sound:
         return get_sounds()
 
+
 class InitError(Exception):
     """Exception which is raised when trying to send a message before
     initializing the module.
@@ -59,6 +62,7 @@ class InitError(Exception):
 
     def __str__(self):
         return "Init the pushover module by calling the init function"
+
 
 class RequestError(Exception):
     """Exception which is raised when Pushover's API returns an error code.
@@ -72,6 +76,7 @@ class RequestError(Exception):
 
     def __str__(self):
         return "\n==> " + "\n==> ".join(self.errors)
+
 
 class Request:
     """Base class to send a request to the Pushover server and check the return
@@ -91,6 +96,7 @@ class Request:
 
     def __str__(self):
         return str(self.answer)
+
 
 class MessageRequest(Request):
     """Class representing a message request to the Pushover API. You do not
@@ -140,6 +146,7 @@ class MessageRequest(Request):
                 setattr(self, parameter + "_at",
                         request.answer[parameter + "_at"])
             return request
+
 
 class Client:
     """This is the main class of the module. It represents a specific Pushover
@@ -210,6 +217,7 @@ class Client:
 
         return MessageRequest(payload)
 
+
 def get_client(profile=None, config_path='~/.pushover'):
     """Create a :class:`Client` object from a default configuration file.
 
@@ -228,9 +236,8 @@ def get_client(profile=None, config_path='~/.pushover'):
     ```
 
     * ``profile``: the profile to load as a client (`Default` by default.)
-    * ``config_path``: path of the configuration file (`~/.pushover` by default.)
-    """
-
+    * ``config_path``: path of the configuration file (`~/.pushover` by
+    default.) """
 
     config_path = os.path.expanduser(config_path)
 
@@ -248,6 +255,7 @@ def get_client(profile=None, config_path='~/.pushover'):
         config.get(section, 'user_key'),
         device=config.get(section, 'device')
     )
+
 
 def main():
     parser = ArgumentParser(description="Send a message to pushover.")
