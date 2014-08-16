@@ -85,7 +85,16 @@ You can have additional sections and specify a device as well:
 
 ``python-pushover`` will attempt to read the configuration from
 ``~/.pushoverrc`` by default. The section to read can be specified by using the
-``profile`` argument.
+``profile`` argument. With the configuration file above, you can send a message
+by simply doing:
+
+.. code-block:: python
+
+    from pushover import Client
+
+    client = Client().send_message("Hello!", title="Hello")
+
+or ``pushover --title "Hello" "Hello!"`` from the command line.
 
 API
 ---

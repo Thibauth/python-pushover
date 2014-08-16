@@ -49,8 +49,8 @@ class InitError(Exception):
     """
 
     def __str__(self):
-        return "No api_token provided. Init the pushover module by\
-                calling the init function"
+        return ("No api_token provided. Init the pushover module by "
+                "calling the init function")
 
 
 class UserError(Exception):
@@ -59,7 +59,7 @@ class UserError(Exception):
     """
 
     def __str__(self):
-        return "No :attr:`user_key` attribute provided."
+        return "No user_key attribute provided."
 
 
 class RequestError(Exception):
@@ -257,8 +257,8 @@ def main():
     parser.add_argument("--priority", "-p", help="message priority")
     parser.add_argument("--url", help="additional url")
     parser.add_argument("--url-title", help="additional url title")
-    parser.add_argument("-c", "--config", help="configuration file",
-                        default="~/.pushoverrc")
+    parser.add_argument("-c", "--config", help="configuration file\
+                        (default: ~/.pushoverrc)", default="~/.pushoverrc")
     parser.add_argument("--profile", help="profile to read in the\
                         configuration file (default: Default)",
                         default="Default")
