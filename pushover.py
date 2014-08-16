@@ -257,21 +257,24 @@ def _get_config(profile='Default', config_path='~/.pushoverrc',
 
 def main():
     parser = ArgumentParser(description="Send a message to pushover.")
-    parser.add_argument("--token", help="Pushover application token",
-                        required=True)
-    parser.add_argument("--client", "-c", help="Pushover client ID",
-                        required=True)
+    parser.add_argument("--api-token", help="Pushover application token")
+    parser.add_argument("--user-key", "-u", help="Pushover user key")
     parser.add_argument("message", help="message to send")
     parser.add_argument("--title", "-t", help="message title")
     parser.add_argument("--priority", "-p", help="message priority")
     parser.add_argument("--url", help="additional url")
     parser.add_argument("--url-title", help="additional url title")
+    parser.add_argument("-c", "--config", help="configuration file",
+                        default="~/.pushoverrc")
+    parser.add_argument("-p", "--profile", help="profile to read in the\
+                        configuration file (default: Default)",
+                        default="Default")
 
     args = parser.parse_args()
-    init(args.token)
-    Client(args.client).send_message(args.message, title=args.title,
-                                     priority=args.priority, url=args.url,
-                                     url_title=args.url_title, timestamp=True)
+    Client(args.user_key, None, args.api_token, args.config,
+           args.profile).send_message(args.message, title=args.title,
+                                      priority=args.priority, url=args.url,
+                                      url_title=args.url_title, timestamp=True)
 
 if __name__ == "__main__":
     main()
