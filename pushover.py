@@ -1,15 +1,3 @@
-"""After being imported, the module must be initialized by calling the
-:func:`init` function with a valid application token before sending messages.
-
-A typical use of the module looks like this::
-
-    import pushover
-
-    pushover.init("token")
-    client = pushover.Client("client-id")
-    client.send_message("Hello!", title="Hello", priority=1)
-"""
-
 import time
 from ConfigParser import RawConfigParser, NoSectionError
 from argparse import ArgumentParser
@@ -271,7 +259,7 @@ def main():
     parser.add_argument("--url-title", help="additional url title")
     parser.add_argument("-c", "--config", help="configuration file",
                         default="~/.pushoverrc")
-    parser.add_argument("-p", "--profile", help="profile to read in the\
+    parser.add_argument("--profile", help="profile to read in the\
                         configuration file (default: Default)",
                         default="Default")
 
