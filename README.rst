@@ -1,5 +1,5 @@
-Python-pushover aims at being a comprehensive Python API implementation of the
-`Pushover Notification Service`_ as documented here__.
+``python-pushover`` aims at providing comprehensive Python bindings for the API
+of the `Pushover Notification Service`_ as documented here__.
 
 .. _Pushover Notification Service: https://pushover.net/ 
 .. __: https://pushover.net/api
@@ -7,8 +7,11 @@ Python-pushover aims at being a comprehensive Python API implementation of the
 Installation
 ------------
 
-You can install python-pushover directly from Pypi_ with ``pip install
-python-pushover`` or ``easy_install python-pushover``.
+You can install python-pushover from Pypi_ with:
+
+.. code-block:: bash
+
+    $ pip install python-pushover
 
 Or you can install it directly from GitHub_:
 
@@ -16,14 +19,77 @@ Or you can install it directly from GitHub_:
 
     git clone https://github.com/Thibauth/python-pushover.git
     cd python-pushover
-    python setup.py install
+    pip install .
 
 .. _Pypi: https://pypi.python.org/pypi/python-pushover/
 .. _GitHub: https://github.com/Thibauth/python-pushover
 
-Documentation
--------------
+Overview
+--------
 
-You can access the full documentation here__.
+After being imported, the module must be initialized by calling the ``init``
+function with a valid application token. Thus, a typical use of the
+``pushover`` module looks like this:
 
-.. __: http://pythonhosted.org/python-pushover
+.. code-block:: python
+
+    from pushover import init, Client
+
+    init("<token>")
+    client = Client("<user-key>").send_message("Hello!", title="Hello")
+
+You can also pass the ``api_token`` optional argument to ``Client`` to
+initialize the module at the same time:
+
+.. code-block:: python
+
+    from pushover import Client
+
+    client = Client("<user-key>", api_token="<api-token>")
+    client.send_message("Hello!", title="Hello")
+
+Command line
+~~~~~~~~~~~~
+
+``python-pushover`` also comes with a command line utility ``pushover`` that
+you can use as follows:
+
+.. code-block:: bash
+
+    pushover --api-token <api-token> --user-key <user-key> "Hello!"
+
+Use ``pushover --help`` to see the list of available options.
+
+Configuration
+~~~~~~~~~~~~~
+
+Both the ``pushover`` module and the ``pushover`` command line utility support
+reading arguments from a configuration file.
+
+The most basic configuration file looks like this:
+
+.. code-block:: ini
+
+    [Default]
+    api_token=aaaaaa
+    user_key=xxxxxx
+
+You can have additional sections and specify a device as well:
+
+.. code-block:: ini
+
+    [Sam-iPhone]
+    api_token=bbbbbb
+    user_key=yyyyyy
+    device=iPhone
+
+``python-pushover`` will attempt to read the configuration from
+``~/.pushoverrc`` by default. The section to read can be specified by using the
+``profile`` argument.
+
+API
+---
+
+You can access the full API documentation here__.
+
+.. __: http://pythonhosted.org/python-pushover/#module-pushover

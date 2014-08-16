@@ -66,12 +66,12 @@ class InitError(Exception):
 
 
 class UserError(Exception):
-    """Exception which is raised when initializing a :class:Client class
-    without specifying a :attr:`user_key`.
+    """Exception which is raised when initializing a :class:`Client` class
+    without specifying a :attr:`user_key` attribute.
     """
 
     def __str__(self):
-        return "No user_key provided."
+        return "No :attr:`user_key` attribute provided."
 
 
 class RequestError(Exception):
@@ -163,9 +163,14 @@ class Client:
     user to whom messages will be sent when calling the :func:`send_message`
     method.
 
-    * ``user``: the Pushover's ID of the user.
-    * ``device``: if not ``None`` further ties the Client object to the
-      specified device.
+    * ``user_key``: the Pushover's ID of the user.
+    * ``device``: if provided further ties the Client object to the specified
+      device.
+    * ``api_token``: if provided and the module wasn't previously initialized,
+      call the :func:`init` function to initialize it.
+    * ``config_path``: configuration file from which to import unprovided
+      parameters. See Configuration_.
+    * ``profile``: section of the configuration file to import parameters from.
     """
 
     def __init__(self, user_key=None, device=None, api_token=None,
