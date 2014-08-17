@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import time
 from ConfigParser import RawConfigParser, NoSectionError
-from argparse import ArgumentParser
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import os
 
 import requests
@@ -265,7 +265,10 @@ def _get_config(profile='Default', config_path='~/.pushoverrc',
 
 
 def main():
-    parser = ArgumentParser(description="Send a message to pushover.")
+    parser = ArgumentParser(description="Send a message to pushover.",
+                            formatter_class=RawDescriptionHelpFormatter,
+                            epilog="""
+For more details and bug reports, see: https://github.com/Thibauth/python-pushover""")
     parser.add_argument("--api-token", help="Pushover application token")
     parser.add_argument("--user-key", "-u", help="Pushover user key")
     parser.add_argument("message", help="message to send")
@@ -278,6 +281,14 @@ def main():
     parser.add_argument("--profile", help="profile to read in the\
                         configuration file (default: Default)",
                         default="Default")
+    parser.add_argument("--version", "-v", action="version",
+                        help="output version information and exit",
+                        version="""
+%(prog)s 0.2
+Copyright (C) 2013-2014 Thibaut Horel <thibaut.horel@gmail.com>
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.""")
 
     args = parser.parse_args()
     Client(args.user_key, None, args.api_token, args.config,
