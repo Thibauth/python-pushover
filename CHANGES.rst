@@ -2,7 +2,7 @@ Changes
 -------
 
 0.2
-+++
+~~~
 
 * Fix bug when using current timestamp
 * Add a ``pushover`` command line utility
@@ -12,6 +12,6 @@ Changes
 * Switch to ``setuptools`` for easier installation and dependencies handling
 
 0.1
-+++
+~~~
 
 Initial Release
