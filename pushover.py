@@ -15,7 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import time
-from ConfigParser import RawConfigParser, NoSectionError
+import sys
+if sys.version_info.major >= 3 and sys.version_info.minor >= 2:
+    from configparser import RawConfigParser, NoSectionError
+else:
+    from ConfigParser import RawConfigParser, NoSectionError
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import os
 
