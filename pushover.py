@@ -133,10 +133,12 @@ class MessageRequest(Request):
         self.receipt = None
         if payload.get("priority", 0) == 2:
             self.receipt = self.answer["receipt"]
-        self.parameters = ["expired", "called_back", "acknowledged"]
-        for parameter in self.parameters:
-            setattr(self, parameter, False)
-            setattr(self, parameter + "_at", 0)
+        self.parameters = {"expired": "expires_at",
+                           "called_back": "called_back_at",
+                           "acknowledged": "acknowledged_at"}
+        for param, when in self.parameters.items():
+            setattr(self, param, False)
+            setattr(self, when, 0)
 
     def poll(self):
         """If the message request has a priority of 2, Pushover will keep
@@ -151,18 +153,18 @@ class MessageRequest(Request):
         acknowledged, so that a typical handling of a priority-2 notification
         can look like this::
 
-            request = client.send_message("Urgent notification", priority=2)
-            while not request.poll():
+            request = client.send_message("Urgent notification", priority=2,
+                                          expire=120, retry=60)
+            while request.poll():
                 # do something
                 time.sleep(5)
         """
-        if (self.receipt and not any(getattr(self, parameter)
-                                     for parameter in self.parameters)):
+        if (self.receipt and not any(getattr(self, key)
+                                     for key in self.parameters.keys())):
             request = Request("get", RECEIPT_URL + self.receipt + ".json", {})
-            for parameter in self.parameters:
-                setattr(self, parameter, request.answer[parameter])
-                setattr(self, parameter + "_at",
-                        request.answer[parameter + "_at"])
+            for param, when in self.parameters.items():
+                setattr(self, param, bool(request.answer[param]))
+                setattr(self, when, request.answer[when])
             return request
 
 
