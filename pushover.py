@@ -132,7 +132,7 @@ class MessageRequest(Request):
         self.parameters = {"expired": "expires_at",
                            "called_back": "called_back_at",
                            "acknowledged": "acknowledged_at"}
-        for param, when in self.parameters.items():
+        for param, when in self.parameters.iteritems():
             setattr(self, param, False)
             setattr(self, when, 0)
 
@@ -156,9 +156,9 @@ class MessageRequest(Request):
                 time.sleep(5)
         """
         if (self.receipt and not any(getattr(self, key)
-                                     for key in self.parameters.keys())):
+                                     for key in self.parameters)):
             request = Request("get", RECEIPT_URL + self.receipt + ".json", {})
-            for param, when in self.parameters.items():
+            for param, when in self.parameters.iteritems():
                 setattr(self, param, bool(request.answer[param]))
                 setattr(self, when, request.answer[when])
             return request
