@@ -155,8 +155,8 @@ class MessageRequest(Request):
                 # do something
                 time.sleep(5)
         """
-        if (self.receipt and not any(getattr(self, key)
-                                     for key in self.parameters)):
+        if (self.receipt and not any(getattr(self, parameter)
+                                     for parameter in self.parameters)):
             request = Request("get", RECEIPT_URL + self.receipt + ".json", {})
             for param, when in self.parameters.iteritems():
                 setattr(self, param, bool(request.answer[param]))
