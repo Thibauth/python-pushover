@@ -224,7 +224,7 @@ class Client:
         if self.device:
             payload["device"] = self.device
 
-        for key, value in kwords.items():
+        for key, value in kwords.iteritems():
             if key not in valid_keywords:
                 raise ValueError("{0}: invalid message parameter".format(key))
 
