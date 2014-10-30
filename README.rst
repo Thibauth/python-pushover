@@ -36,7 +36,7 @@ function with a valid application token. Thus, a typical use of the
     from pushover import init, Client
 
     init("<token>")
-    client = Client("<user-key>").send_message("Hello!", title="Hello")
+    Client("<user-key>").send_message("Hello!", title="Hello")
 
 You can also pass the ``api_token`` optional argument to ``Client`` to
 initialize the module at the same time:
@@ -92,7 +92,7 @@ by simply doing:
 
     from pushover import Client
 
-    client = Client().send_message("Hello!", title="Hello")
+    Client().send_message("Hello!", title="Hello")
 
 or ``pushover --title "Hello" "Hello!"`` from the command line.
 
