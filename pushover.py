@@ -181,7 +181,7 @@ class Client:
 
     def __init__(self, user_key=None, device=None, api_token=None,
                  config_path="~/.pushoverrc", profile="Default"):
-        params = _get_config(profile, config_path, user_key, api_token)
+        params = _get_config(profile, config_path, user_key, api_token, device)
         self.user_key = params["user_key"]
         if not self.user_key:
             raise UserError
@@ -244,7 +244,7 @@ class Client:
 
 
 def _get_config(profile='Default', config_path='~/.pushoverrc',
-                user_key=None, api_token=None):
+                user_key=None, api_token=None, device=None):
     config_path = os.path.expanduser(config_path)
     config = RawConfigParser()
     config.read(config_path)
@@ -257,6 +257,8 @@ def _get_config(profile='Default', config_path='~/.pushoverrc',
         params["user_key"] = user_key
     if api_token:
         params["api_token"] = api_token
+    if device:
+        params["device"] = device
 
     if not TOKEN:
         init(params["api_token"])
