@@ -218,7 +218,7 @@ class Client:
         """
         valid_keywords = ["title", "priority", "sound", "callback",
                           "timestamp", "url", "url_title", "device",
-                          "retry", "expire"]
+                          "retry", "expire", "html"]
 
         payload = {"message": message, "user": self.user_key}
         if self.device:
