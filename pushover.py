@@ -210,7 +210,7 @@ class Client:
         """Send a message to the user. It is possible to specify additional
         properties of the message by passing keyword arguments. The list of
         valid keywords is ``title, priority, sound, callback, timestamp, url,
-        url_title, device, retry and expire`` which are described in the
+        url_title, device, retry, expire and html`` which are described in the
         Pushover API documentation. For convenience, you can simply set
         ``timestamp=True`` to set the timestamp to the current timestamp.
 
