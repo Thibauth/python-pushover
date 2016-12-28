@@ -29,6 +29,7 @@ MESSAGE_URL = BASE_URL + "messages.json"
 USER_URL = BASE_URL + "users/validate.json"
 SOUND_URL = BASE_URL + "sounds.json"
 RECEIPT_URL = BASE_URL + "receipts/"
+GLANCE_URL = BASE_URL + "glances.json"
 
 SOUNDS = None
 TOKEN = None
@@ -164,6 +165,16 @@ class MessageRequest(Request):
             return request
 
 
+class GlanceRequest(Request):
+    """Class representing a glance request to the Pushover API. This is
+    a heavily simplified version of the MessageRequest class, with all
+    polling-related features removed.
+    """
+
+    def __init__(self, payload):
+        Request.__init__(self, "post", GLANCE_URL, payload)
+
+
 class Client:
     """This is the main class of the module. It represents a specific Pushover
     user to whom messages will be sent when calling the :func:`send_message`
@@ -241,6 +252,31 @@ class Client:
                 payload[key] = value
 
         return MessageRequest(payload)
+
+    def send_glance(self, text=None, **kwords):
+        """Send a glance to the user. The default property is ``text``,
+        as this is used on most glances, however a valid glance does not
+        need to require text and can be constructed using any combination
+        of valid keyword properties. The list of valid keywords is ``title,
+        text, subtext, count and percent`` which are  described in the
+        Pushover Glance API documentation.
+
+        This method returns a :class:`GlanceRequest` object.
+        """
+        valid_keywords = ["title", "text", "subtext", "count", "percent"]
+
+        payload = {"user": self.user_key}
+        if text:
+            payload["text"] = text
+        if self.device:
+            payload["device"] = self.device
+
+        for key, value in kwords.iteritems():
+            if key not in valid_keywords:
+                raise ValueError("{0}: invalid message parameter".format(key))
+            payload[key] = value
+
+        return GlanceRequest(payload)
 
 
 def _get_config(profile='Default', config_path='~/.pushoverrc',
