@@ -164,6 +164,17 @@ class MessageRequest(Request):
                 setattr(self, when, request.answer[when])
             return request
 
+    def cancel(self):
+        """If the message request has a priority of 2, Pushover will keep
+        sending the same notification until it either reaches its ``expire`` value
+        or is aknowledged by the client. Calling the :func:`cancel` function will
+        cancel the notification early.
+        """
+        if (self.receipt and not any(getattr(self, parameter)
+                                     for parameter in self.parameters)):
+            request = Request("post", RECEIPT_URL + self.receipt + "/cancel.json", {})
+            return request
+
 
 class GlanceRequest(Request):
     """Class representing a glance request to the Pushover API. This is
