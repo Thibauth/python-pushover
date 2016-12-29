@@ -155,6 +155,8 @@ class MessageRequest(Request):
             while request.poll():
                 # do something
                 time.sleep(5)
+
+            print request.acknowledged_at, request.acknowledged_by
         """
         if (self.receipt and not any(getattr(self, parameter)
                                      for parameter in self.parameters)):
@@ -162,6 +164,9 @@ class MessageRequest(Request):
             for param, when in self.parameters.iteritems():
                 setattr(self, param, bool(request.answer[param]))
                 setattr(self, when, request.answer[when])
+            for param in ["last_delivered_at", "acknowledged_by",
+                          "acknowledged_by_device"]:
+                setattr(self, param, request.answer[param])
             return request
 
     def cancel(self):
