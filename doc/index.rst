@@ -10,3 +10,5 @@ API
 .. automodule:: pushover
     :members:
     :show-inheritance:
+
+.. include:: ../CHANGES.rst

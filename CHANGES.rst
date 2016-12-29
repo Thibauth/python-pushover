@@ -1,9 +1,13 @@
 Changes
 -------
 
-0.x
-~~~
+0.3 (2016-12-29)
+~~~~~~~~~~~~~~~~
 
+* Add support for the Glances API
+* Add a ``cancel`` function to ``MessageRequest`` objects to cancel high
+  priority messages
+* Add support for html message styling
 * Fix bug in MessageRequest.poll for ``priority=2`` requests
 
 0.2 (2014-08-16)

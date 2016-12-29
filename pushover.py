@@ -330,7 +330,7 @@ For more details and bug reports, see: https://github.com/Thibauth/python-pushov
     parser.add_argument("--user-key", "-u", help="Pushover user key")
     parser.add_argument("message", help="message to send")
     parser.add_argument("--title", "-t", help="message title")
-    parser.add_argument("--priority", "-p", help="message priority")
+    parser.add_argument("--priority", "-p", help="message priority (-1, 0, 1 or 2)")
     parser.add_argument("--url", help="additional url")
     parser.add_argument("--url-title", help="additional url title")
     parser.add_argument("-c", "--config", help="configuration file\
@@ -342,7 +342,7 @@ For more details and bug reports, see: https://github.com/Thibauth/python-pushov
                         help="output version information and exit",
                         version="""
 %(prog)s 0.2
-Copyright (C) 2013-2014 Thibaut Horel <thibaut.horel@gmail.com>
+Copyright (C) 2013-2016 Thibaut Horel <thibaut.horel@gmail.com>
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.""")

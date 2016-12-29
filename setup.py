@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name='python-pushover',
-      version='0.2',
+      version='0.3',
       description="Comprehensive bindings and command line utility for the "
                   "Pushover notification service",
       long_description=open("README.rst").read() + "\n"
