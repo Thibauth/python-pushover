@@ -8,3 +8,4 @@ Contributors
 * Thibaut Horel <thibaut.horel@gmail.com>
 * Filip Lundborg <filip@filipl.se>
 * Philip Lundrigan <philipbl@cs.utah.edu>
+* Steve Miller <copart@gmail.com>

@@ -1,6 +1,6 @@
-# pushover 0.2
+# pushover 0.3
 #
-# Copyright (C) 2013-2014  Thibaut Horel <thibaut.horel@gmail.com>
+# Copyright (C) 2013-2016  Thibaut Horel <thibaut.horel@gmail.com>
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -330,7 +330,9 @@ For more details and bug reports, see: https://github.com/Thibauth/python-pushov
     parser.add_argument("--user-key", "-u", help="Pushover user key")
     parser.add_argument("message", help="message to send")
     parser.add_argument("--title", "-t", help="message title")
-    parser.add_argument("--priority", "-p", help="message priority (-1, 0, 1 or 2)")
+    parser.add_argument("--priority", "-p", help="message priority (-1, 0, 1 or 2)", type=int)
+    parser.add_argument("--retry", "-r", help="how often (in seconds) the Pushover servers will send the same notification to the user", type=int)
+    parser.add_argument("--expire", "-e", help="how many seconds your notification will continue to be retried for (every retry seconds).", type=int)
     parser.add_argument("--url", help="additional url")
     parser.add_argument("--url-title", help="additional url title")
     parser.add_argument("-c", "--config", help="configuration file\
@@ -341,17 +343,21 @@ For more details and bug reports, see: https://github.com/Thibauth/python-pushov
     parser.add_argument("--version", "-v", action="version",
                         help="output version information and exit",
                         version="""
-%(prog)s 0.2
+%(prog)s 0.3
 Copyright (C) 2013-2016 Thibaut Horel <thibaut.horel@gmail.com>
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.""")
 
     args = parser.parse_args()
+    if args.priority and args.priority==2 and (args.retry is None or args.expire is None):
+        parser.error("priority of 2 requires expire and retry")
+
     Client(args.user_key, None, args.api_token, args.config,
            args.profile).send_message(args.message, title=args.title,
                                       priority=args.priority, url=args.url,
-                                      url_title=args.url_title, timestamp=True)
+                                      url_title=args.url_title, timestamp=True,
+                                      retry=args.retry,expire=args.expire)
 
 if __name__ == "__main__":
     main()
