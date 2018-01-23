@@ -1,6 +1,12 @@
 Changes
 -------
 
+0.4 (tbd)
+~~~~~~~~~~~~~~~~
+
+* Add support for expire and retry provided at command line.  These are
+  required by priority 2 messages.
+
 0.3 (2016-12-29)
 ~~~~~~~~~~~~~~~~
 
