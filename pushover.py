@@ -99,12 +99,12 @@ class Request:
     a :class:`RequestError` exception when the request is rejected.
     """
 
-    def __init__(self, request_type, url, payload):
+    def __init__(self, request_type, url, payload, files={}):
         if not TOKEN:
             raise InitError
 
         payload["token"] = TOKEN
-        request = getattr(requests, request_type)(url, params=payload)
+        request = getattr(requests, request_type)(url, params=payload, files=files)
         self.answer = request.json()
         if 400 <= request.status_code < 500:
             raise RequestError(self.answer["errors"])
@@ -125,8 +125,8 @@ class MessageRequest(Request):
     :func:`poll` function.
     """
 
-    def __init__(self, payload):
-        Request.__init__(self, "post", MESSAGE_URL, payload)
+    def __init__(self, payload, files):
+        Request.__init__(self, "post", MESSAGE_URL, payload, files)
         self.receipt = None
         if payload.get("priority", 0) == 2:
             self.receipt = self.answer["receipt"]
@@ -234,13 +234,16 @@ class Client:
         self.devices = request.answer["devices"]
         return True
 
-    def send_message(self, message, **kwords):
+    def send_message(self, message, attachment=None, **kwords):
         """Send a message to the user. It is possible to specify additional
         properties of the message by passing keyword arguments. The list of
         valid keywords is ``title, priority, sound, callback, timestamp, url,
         url_title, device, retry, expire and html`` which are described in the
         Pushover API documentation. For convenience, you can simply set
         ``timestamp=True`` to set the timestamp to the current timestamp.
+
+        An image can be attached to a message by passing a file-like object
+        with the `attachment` keyword argument.
 
         This method returns a :class:`MessageRequest` object.
         """
@@ -249,6 +252,7 @@ class Client:
                           "retry", "expire", "html"]
 
         payload = {"message": message, "user": self.user_key}
+        files = {'attachment': attachment} if attachment else {}
         if self.device:
             payload["device"] = self.device
 
@@ -268,7 +272,7 @@ class Client:
             elif value:
                 payload[key] = value
 
-        return MessageRequest(payload)
+        return MessageRequest(payload, files)
 
     def send_glance(self, text=None, **kwords):
         """Send a glance to the user. The default property is ``text``,
