@@ -48,6 +48,14 @@ initialize the module at the same time:
     client = Client("<user-key>", api_token="<api-token>")
     client.send_message("Hello!", title="Hello")
 
+Attachments can be sent with the ``attachment`` parameter which takes as
+argument as file object:
+
+.. code-block:: python
+
+    with open('/path/to/my/image.png', 'rb') as image:
+        client.send_message('Message with image', attachment=image)
+
 Command line
 ~~~~~~~~~~~~
 
