@@ -1,6 +1,6 @@
-# pushover 0.3
+# pushover 0.4
 #
-# Copyright (C) 2013-2016  Thibaut Horel <thibaut.horel@gmail.com>
+# Copyright (C) 2013-2018  Thibaut Horel <thibaut.horel@gmail.com>
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -347,8 +347,8 @@ For more details and bug reports, see: https://github.com/Thibauth/python-pushov
     parser.add_argument("--version", "-v", action="version",
                         help="output version information and exit",
                         version="""
-%(prog)s 0.3
-Copyright (C) 2013-2016 Thibaut Horel <thibaut.horel@gmail.com>
+%(prog)s 0.4
+Copyright (C) 2013-2018 Thibaut Horel <thibaut.horel@gmail.com>
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.""")

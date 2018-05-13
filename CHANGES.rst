@@ -1,11 +1,12 @@
 Changes
 -------
 
-0.4 (tbd)
+0.4 (2018-05-13)
 ~~~~~~~~~~~~~~~~
 
-* Add support for expire and retry provided at command line.  These are
-  required by priority 2 messages.
+* Add support for ``expire`` and ``retry`` parameters to the command line for
+  ``priority=2`` messages
+* Add support for attachments
 
 0.3 (2016-12-29)
 ~~~~~~~~~~~~~~~~
