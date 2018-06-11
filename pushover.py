@@ -18,6 +18,7 @@ import time
 from ConfigParser import RawConfigParser, NoSectionError, NoOptionError
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import os
+import sys
 
 import requests
 
@@ -286,7 +287,7 @@ For more details and bug reports, see: https://github.com/Thibauth/python-pushov
     parser.add_argument("--user", "-u", help="User key or section name in the configuration", required=True)
     parser.add_argument("-c", "--config", help="configuration file\
                         (default: ~/.pushoverrc)", default="~/.pushoverrc")
-    parser.add_argument("message", help="message to send")
+    parser.add_argument("message", help="message to send. set to - to read from stdin")
     parser.add_argument("--url", help="additional url")
     parser.add_argument("--url-title", help="url title")
     parser.add_argument("--title", "-t", help="message title")
@@ -316,6 +317,10 @@ There is NO WARRANTY, to the extent permitted by law.""")
         token = args.token or params["token"]
     except KeyError:
         raise ApiTokenError()
+
+    if args.message == "-":
+        # read from stdin
+        args.message = sys.stdin.read()
 
     Pushover(token).send_message(user_key, args.message, device=device,
             title=args.title, priority=args.priority, url=args.url,
