@@ -21,8 +21,8 @@ import os
 
 import requests
 
-__all__ = ["init", "get_sounds", "Client", "MessageRequest",
-           "InitError", "RequestError", "UserError"]
+__all__ = ["get_sounds", "Client", "MessageRequest",
+           "APITokenError", "RequestError", "UserError"]
 
 BASE_URL = "https://api.pushover.net/1/"
 MESSAGE_URL = BASE_URL + "messages.json"
@@ -32,7 +32,6 @@ RECEIPT_URL = BASE_URL + "receipts/"
 GLANCE_URL = BASE_URL + "glances.json"
 
 SOUNDS = None
-TOKEN = None
 
 
 def get_sounds():
@@ -49,25 +48,13 @@ def get_sounds():
     return SOUNDS
 
 
-def init(token, sound=False):
-    """Initialize the module by setting the application token which will be
-    used to send messages. If ``sound`` is ``True`` also returns the list of
-    valid sounds by calling the :func:`get_sounds` function.
-    """
-    global TOKEN
-    TOKEN = token
-    if sound:
-        return get_sounds()
-
-
-class InitError(Exception):
+class APITokenError(Exception):
     """Exception which is raised when trying to send a message before
     initializing the module.
     """
 
     def __str__(self):
-        return ("No api_token provided. Init the pushover module by "
-                "calling the init function")
+        return ("No api_token attribute provided.")
 
 
 class UserError(Exception):
@@ -100,10 +87,6 @@ class Request:
     """
 
     def __init__(self, request_type, url, payload, files={}):
-        if not TOKEN:
-            raise InitError
-
-        payload["token"] = TOKEN
         request = getattr(requests, request_type)(url, params=payload, files=files)
         self.answer = request.json()
         if 400 <= request.status_code < 500:
@@ -213,6 +196,9 @@ class Client:
         self.user_key = params["user_key"]
         if not self.user_key:
             raise UserError
+        self.api_token = params["api_token"]
+        if not self.api_token:
+            raise APITokenError
         self.device = params["device"]
         self.devices = []
 
@@ -251,7 +237,7 @@ class Client:
                           "timestamp", "url", "url_title", "device",
                           "retry", "expire", "html"]
 
-        payload = {"message": message, "user": self.user_key}
+        payload = {"message": message, "user": self.user_key, "token": self.api_token}
         files = {'attachment': attachment} if attachment else {}
         if self.device:
             payload["device"] = self.device
@@ -316,11 +302,6 @@ def _get_config(profile='Default', config_path='~/.pushoverrc',
         params["api_token"] = api_token
     if device:
         params["device"] = device
-
-    if not TOKEN:
-        init(params["api_token"])
-        if not TOKEN:
-            raise InitError
 
     return params
 

@@ -27,19 +27,8 @@ Or you can install it directly from GitHub_:
 Overview
 --------
 
-After being imported, the module must be initialized by calling the ``init``
-function with a valid application token. Thus, a typical use of the
-``pushover`` module looks like this:
-
-.. code-block:: python
-
-    from pushover import init, Client
-
-    init("<token>")
-    Client("<user-key>").send_message("Hello!", title="Hello")
-
-You can also pass the ``api_token`` optional argument to ``Client`` to
-initialize the module at the same time:
+After being imported, the module must be initialized by passing the
+``user_key`` and the ``api_token`` to ``Client``:
 
 .. code-block:: python
 
