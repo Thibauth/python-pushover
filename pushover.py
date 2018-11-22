@@ -287,7 +287,8 @@ For more details and bug reports, see: https://github.com/Thibauth/python-pushov
     parser.add_argument("--user", "-u", help="User key or section name in the configuration", required=True)
     parser.add_argument("-c", "--config", help="configuration file\
                         (default: ~/.pushoverrc)", default="~/.pushoverrc")
-    parser.add_argument("message", help="message to send. set to - to read from stdin")
+    parser.add_argument("message", help="message to send.", nargs="?")
+    parser.add_argument("--file", help="Read message from file. Will read from stdin if set to -.")
     parser.add_argument("--url", help="additional url")
     parser.add_argument("--url-title", help="url title")
     parser.add_argument("--title", "-t", help="message title")
@@ -318,11 +319,23 @@ There is NO WARRANTY, to the extent permitted by law.""")
     except KeyError:
         raise ApiTokenError()
 
-    if args.message == "-":
-        # read from stdin
-        args.message = sys.stdin.read()
+    if args.message is None and args.file is None:
+        raise ValueError("Either --file or an explicit message need to be given")
+    if args.message is not None and args.file is not None:
+        raise ValueError("--file was passed but explicit message argument was also set")
 
-    Pushover(token).send_message(user_key, args.message, device=device,
+    if args.file:
+        if args.file == "-":
+            message = sys.stdin.read()
+        elif os.path.exists(args.file):
+            with open(args.file, "r") as f:
+                message = f.read()
+        else:
+            raise ValueError("Input file at %s was not found."%args.file)
+    else: # args.message 
+        message = args.message
+
+    Pushover(token).send_message(user_key, message, device=device,
             title=args.title, priority=args.priority, url=args.url,
             url_title=args.url_title, timestamp=True, retry=args.retry,
             expire=args.expire)
