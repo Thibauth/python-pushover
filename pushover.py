@@ -15,14 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import time
-from ConfigParser import RawConfigParser, NoSectionError, NoOptionError
-from argparse import ArgumentParser, RawDescriptionHelpFormatter
-import os
-
 import requests
-
-__all__ = ["Pushover", "MessageRequest", "ApiTokenError", "RequestError",
-        "read_config"]
 
 BASE_URL = "https://api.pushover.net/1/"
 MESSAGE_URL = BASE_URL + "messages.json"
@@ -30,16 +23,6 @@ USER_URL = BASE_URL + "users/validate.json"
 SOUND_URL = BASE_URL + "sounds.json"
 RECEIPT_URL = BASE_URL + "receipts/"
 GLANCE_URL = BASE_URL + "glances.json"
-
-
-class ApiTokenError(Exception):
-    """Exception which is raised when trying to send a message before
-    initializing the module.
-    """
-
-    def __str__(self):
-        return "No api_token provided."
-
 
 class RequestError(Exception):
     """Exception which is raised when Pushover's API returns an error code.
@@ -61,8 +44,14 @@ class Request:
     a :class:`RequestError` exception when the request is rejected.
     """
 
-    def __init__(self, request_type, url, payload, files={}):
-        request = getattr(requests, request_type)(url, params=payload, files=files)
+    def __init__(self, method, url, payload):
+        files = {}
+        if "attachment" in payload:
+            files["attachment"] = payload["attachment"]
+            del payload["attachment"]
+        self.payload = payload
+        self.files = files
+        request = getattr(requests, method)(url, params=payload, files=files)
         self.answer = request.json()
         if 400 <= request.status_code < 500:
             raise RequestError(self.answer["errors"])
@@ -72,131 +61,113 @@ class Request:
 
 
 class MessageRequest(Request):
-    """Class representing a message request to the Pushover API. You do not
-    need to create them yourself, but the :func:`Client.send_message` function
-    returns :class:`MessageRequest` objects if you need to inspect the requests
-    after they have been answered by the Pushover server.
+    """This class represents a message request to the Pushover API. You do not
+    need to create it yourself, but the :func:`Pushover.message` function
+    returns :class:`MessageRequest` objects.
 
     The :attr:`answer` attribute contains a JSON representation of the answer
-    made by the Pushover API. In the case where you have sent a message with
-    a priority of 2, you can poll the status of the notification with the
-    :func:`poll` function.
+    made by the Pushover API. When sending a message with a priority of 2, you
+    can poll the status of the notification with the :func:`poll` function.
     """
 
-    def __init__(self, payload, files):
-        Request.__init__(self, "post", MESSAGE_URL, payload, files)
-        self.token = payload["token"]
-        self.receipt = None
+    params = {"expired": "expires_at",
+            "called_back": "called_back_at",
+            "acknowledged": "acknowledged_at"}
+
+    def __init__(self, payload):
+        Request.__init__(self, "post", MESSAGE_URL, payload)
+        self.status = {"done": True}
         if payload.get("priority", 0) == 2:
-            self.receipt = self.answer["receipt"]
-        self.parameters = {"expired": "expires_at",
-                           "called_back": "called_back_at",
-                           "acknowledged": "acknowledged_at"}
-        for param, when in self.parameters.iteritems():
-            setattr(self, param, False)
-            setattr(self, when, 0)
+            self.url = RECEIPT_URL + self.answer["receipt"]
+            self.status["done"] = False
+            for param, when in MessageRequest.params.iteritems():
+                self.status[param] = False
+                self.status[when] = 0
 
     def poll(self):
-        """If the message request has a priority of 2, Pushover will keep
-        sending the same notification until the client acknowledges it. Calling
-        the :func:`poll` function will update the status of the
-        :class:`MessageRequest` object until the notifications either expires,
-        is acknowledged by the client, or the callback url is reached. The
-        attributes of interest are: ``expired, called_back, acknowledged`` and
-        their *_at* variants as explained in the API documentation.
+        """If the message request has a priority of 2, Pushover keeps sending
+        the same notification until the client acknowledges it. Calling the
+        :func:`poll` function fetches the status of the :class:`MessageRequest`
+        object until the notifications either expires, is acknowledged by the
+        client, or the callback url is reached. The status is available in the
+        ``status`` dictionary.
 
-        This function returns ``None`` when the request has expired or been
-        acknowledged, so that a typical handling of a priority-2 notification
-        can look like this::
+        Returns ``True`` when the request has expired or been acknowledged and
+        ``False`` otherwise so that a typical handling of a priority-2
+        notification can look like this::
 
-            request = client.send_message("Urgent notification", priority=2,
-                                          expire=120, retry=60)
-            while request.poll():
+            request = p.message("Urgent!", priority=2, expire=120, retry=60)
+            while not request.poll():
                 # do something
                 time.sleep(5)
 
-            print request.acknowledged_at, request.acknowledged_by
+            print request.status
         """
-        if (self.receipt and not any(getattr(self, parameter)
-                                     for parameter in self.parameters)):
-            request = Request("get", RECEIPT_URL + self.receipt + ".json", {
-                "token": self.token
-                })
-            for param, when in self.parameters.iteritems():
-                setattr(self, param, bool(request.answer[param]))
-                setattr(self, when, request.answer[when])
-            for param in ["last_delivered_at", "acknowledged_by",
-                          "acknowledged_by_device"]:
-                setattr(self, param, request.answer[param])
-            return request
+        if not self.status["done"]:
+            r = Request("get", self.url + ".json", {"token": self.payload["token"]})
+            for param, when in MessageRequest.params.iteritems():
+                self.status[param] = bool(r.answer[param])
+                self.status[when] = int(r.answer[when])
+            for param in ["acknowledged_by", "acknowledged_by_device"]:
+                self.status[param] = r.answer[param]
+            self.status["last_delivered_at"] = int(r.answer["last_delivered_at"])
+            if any(self.status[param] for param in MessageRequest.params):
+                self.status["done"] = True
+        return self.status["done"]
 
     def cancel(self):
-        """If the message request has a priority of 2, Pushover will keep
-        sending the same notification until it either reaches its ``expire``
-        value or is aknowledged by the client. Calling the :func:`cancel`
-        function will cancel the notification early.
+        """If the message request has a priority of 2, Pushover keeps sending
+        the same notification until it either reaches its ``expire`` value or
+        is aknowledged by the client. Calling the :func:`cancel` function
+        cancels the notification early.
         """
-        if (self.receipt and not any(getattr(self, parameter)
-                                     for parameter in self.parameters)):
-            request = Request("post", RECEIPT_URL + self.receipt
-                              + "/cancel.json", {
-                                  "token": self.token
-                                  })
-            return request
-
-
-class GlanceRequest(Request):
-    """Class representing a glance request to the Pushover API. This is
-    a heavily simplified version of the MessageRequest class, with all
-    polling-related features removed.
-    """
-
-    def __init__(self, payload):
-        Request.__init__(self, "post", GLANCE_URL, payload)
+        if not self.status["done"]:
+            return Request("post", self.url + "/cancel.json", {"token": self.payload["token"]})
 
 
 class Pushover:
-    """This is the main class of the module. It represents a Pushover app, i.e.
-    it is tied to an API token.
+    """This is the main class of the module. It represents a Pushover app and
+    is tied to a unique API token.
 
     * ``token``: Pushover API token
     """
 
     _SOUNDS = None
+    message_keywords = ["title", "priority", "sound", "callback", "timestamp", "url", "url_title", "device", "retry", "expire", "html", "attachment"]
+    glance_keywords = ["title", "text", "subtext", "count", "percent", "device"]
 
     def __init__(self, token):
         self.token = token
 
     @property
     def sounds(self):
-        """Return a list of sounds (as a list of strings) recognized
-        by Pushover and that can be used in a notification message.
-
-        The result is cached: a request is made to the Pushover server only
-        the first time this function is called.
+        """Return a dictionary of sounds recognized by Pushover and that can be
+        used in a notification message.
         """
         if not Pushover._SOUNDS:
             request = Request("get", SOUND_URL, {"token": self.token})
-            Pushover._SOUNDS = request.answer["sounds"].keys()
+            Pushover._SOUNDS = request.answer["sounds"]
         return Pushover._SOUNDS
 
-    def verify(self, user_key, device=None):
-        """Verify that the `user_key` and optional `device` exist. Returns
+
+    def verify(self, user, device=None):
+        """Verify that the `user` and optional `device` exist. Returns
         `None` when the user/device does not exist or a list of the user's
         devices otherwise.
         """
-        payload = {"user": self.user_key, "token": self.token}
+        payload = {"user": user, "token": self.token}
         if device:
             payload["device"] = device
         try:
             request = Request("post", USER_URL, payload)
         except RequestError:
             return None
+        else:
+            return request.answer["devices"]
 
-        return request.answer["devices"]
 
-    def send_message(self, user_key, message, **kwords):
-        """Send `message` to the user specified by `user_key`. It is possible
+    def message(self, user, message, **kwargs):
+        """Send `message` to the user specified by `user`. It is possible
         to specify additional properties of the message by passing keyword
         arguments. The list of valid keywords is ``title, priority, sound,
         callback, timestamp, url, url_title, device, retry, expire and html``
@@ -210,74 +181,64 @@ class Pushover:
 
         This method returns a :class:`MessageRequest` object.
         """
-        valid_keywords = ["title", "priority", "sound", "callback",
-                          "timestamp", "url", "url_title", "device",
-                          "retry", "expire", "html", "attachment"]
 
-        payload = {"message": message, "user": user_key, "token": self.token}
-        files = {}
-        for key, value in kwords.iteritems():
-            if key not in valid_keywords:
+        payload = {"message": message, "user": user, "token": self.token}
+        for key, value in kwargs.iteritems():
+            if key not in Pushover.message_keywords:
                 raise ValueError("{0}: invalid message parameter".format(key))
-
-            if key == "timestamp" and value is True:
-                payload[key] = int(time.time())
-            elif key == "sound":
-                if value not in self.sounds:
+            elif key == "timestamp" and value is True:
+                    payload[key] = int(time.time())
+            elif key == "sound" and value not in self.sounds:
                     raise ValueError("{0}: invalid sound".format(value))
-                else:
-                    payload[key] = value
-            elif key == "attachment":
-                files["attachment"] = value
-            elif value:
+            else:
                 payload[key] = value
 
-        return MessageRequest(payload, files)
+        return MessageRequest(payload)
 
-    def send_glance(self, user_key, **kwords):
-        """Send a glance to the user. The default property is ``text``,
-        as this is used on most glances, however a valid glance does not
-        need to require text and can be constructed using any combination
-        of valid keyword properties. The list of valid keywords is ``title,
-        text, subtext, count and percent`` which are  described in the
+    def glance(self, user, **kwargs):
+        """Send a glance to the user. The default property is ``text``, as this
+        is used on most glances, however a valid glance does not need to
+        require text and can be constructed using any combination of valid
+        keyword properties. The list of valid keywords is ``title, text,
+        subtext, count, percent and device`` which are  described in the
         Pushover Glance API documentation.
 
         This method returns a :class:`GlanceRequest` object.
         """
-        valid_keywords = ["title", "text", "subtext", "count", "percent",
-                "device"]
+        payload = {"user": user, "token": self.token}
 
-        payload = {"user": user_key, "token": self.token}
+        for key, value in kwargs.iteritems():
+            if key not in Pushover.glance_keywords:
+                raise ValueError("{0}: invalid glance parameter".format(key))
+            else:
+                payload[key] = value
 
-        for key, value in kwords.iteritems():
-            if key not in valid_keywords:
-                raise ValueError("{0}: invalid message parameter".format(key))
-            payload[key] = value
-
-        return GlanceRequest(payload)
-
-
-def read_config(config_path):
-    config_path = os.path.expanduser(config_path)
-    config = RawConfigParser()
-    params = {"users": {}}
-    files = config.read(config_path)
-    if not files:
-        return params
-    params["token"] = config.get("main", "token")
-    for name in config.sections():
-        if name != "main":
-            user = {}
-            user["user_key"] = config.get(name, "user_key")
-            try:
-                user["device"] = config.get(name, "device")
-            except NoOptionError:
-                user["device"] = None
-            params["users"][name] = user
-    return params
-
+        return Request("post", GLANCE_URL, payload)
 
 def main():
+    from ConfigParser import RawConfigParser, NoSectionError, NoOptionError
+    from argparse import ArgumentParser, RawDescriptionHelpFormatter
+    import os
+
+    def read_config(config_path):
+        config_path = os.path.expanduser(config_path)
+        config = RawConfigParser()
+        params = {"users": {}}
+        files = config.read(config_path)
+        if not files:
+            return params
+        params["token"] = config.get("main", "token")
+        for name in config.sections():
+            if name != "main":
+                user = {}
+                user["user_key"] = config.get(name, "user_key")
+                try:
+                    user["device"] = config.get(name, "device")
+                except NoOptionError:
+                    user["device"] = None
+                params["users"][name] = user
+        return params
+
     parser = ArgumentParser(description="Send a message to pushover.",
                             formatter_class=RawDescriptionHelpFormatter,
                             epilog="""
@@ -312,12 +273,9 @@ There is NO WARRANTY, to the extent permitted by law.""")
     else:
         user_key = args.user
         device = None
-    try:
-        token = args.token or params["token"]
-    except KeyError:
-        raise ApiTokenError()
+    token = args.token or params["token"]
 
-    Pushover(token).send_message(user_key, args.message, device=device,
+    Pushover(token).message(user_key, args.message, device=device,
             title=args.title, priority=args.priority, url=args.url,
             url_title=args.url_title, timestamp=True, retry=args.retry,
             expire=args.expire)
