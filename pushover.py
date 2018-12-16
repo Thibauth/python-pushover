@@ -24,6 +24,7 @@ SOUND_URL = BASE_URL + "sounds.json"
 RECEIPT_URL = BASE_URL + "receipts/"
 GLANCE_URL = BASE_URL + "glances.json"
 
+
 class RequestError(Exception):
     """Exception which is raised when Pushover's API returns an error code.
 
@@ -38,7 +39,7 @@ class RequestError(Exception):
         return "\n==> " + "\n==> ".join(self.errors)
 
 
-class Request:
+class Request(object):
     """Base class to send a request to the Pushover server and check the return
     status code. The request is sent on instantiation and raises
     a :class:`RequestError` exception when the request is rejected.
@@ -70,9 +71,11 @@ class MessageRequest(Request):
     can poll the status of the notification with the :func:`poll` function.
     """
 
-    params = {"expired": "expires_at",
-            "called_back": "called_back_at",
-            "acknowledged": "acknowledged_at"}
+    params = {
+        "expired": "expires_at",
+        "called_back": "called_back_at",
+        "acknowledged": "acknowledged_at",
+    }
 
     def __init__(self, payload):
         Request.__init__(self, "post", MESSAGE_URL, payload)
@@ -122,10 +125,14 @@ class MessageRequest(Request):
         cancels the notification early.
         """
         if not self.status["done"]:
-            return Request("post", self.url + "/cancel.json", {"token": self.payload["token"]})
+            return Request(
+                "post", self.url + "/cancel.json", {"token": self.payload["token"]}
+            )
+        else:
+            return None
 
 
-class Pushover:
+class Pushover(object):
     """This is the main class of the module. It represents a Pushover app and
     is tied to a unique API token.
 
@@ -133,7 +140,20 @@ class Pushover:
     """
 
     _SOUNDS = None
-    message_keywords = ["title", "priority", "sound", "callback", "timestamp", "url", "url_title", "device", "retry", "expire", "html", "attachment"]
+    message_keywords = [
+        "title",
+        "priority",
+        "sound",
+        "callback",
+        "timestamp",
+        "url",
+        "url_title",
+        "device",
+        "retry",
+        "expire",
+        "html",
+        "attachment",
+    ]
     glance_keywords = ["title", "text", "subtext", "count", "percent", "device"]
 
     def __init__(self, token):
@@ -148,7 +168,6 @@ class Pushover:
             request = Request("get", SOUND_URL, {"token": self.token})
             Pushover._SOUNDS = request.answer["sounds"]
         return Pushover._SOUNDS
-
 
     def verify(self, user, device=None):
         """Verify that the `user` and optional `device` exist. Returns
@@ -165,14 +184,13 @@ class Pushover:
         else:
             return request.answer["devices"]
 
-
     def message(self, user, message, **kwargs):
         """Send `message` to the user specified by `user`. It is possible
         to specify additional properties of the message by passing keyword
         arguments. The list of valid keywords is ``title, priority, sound,
         callback, timestamp, url, url_title, device, retry, expire and html``
         which are described in the Pushover API documentation.
-        
+
         For convenience, you can simply set ``timestamp=True`` to set the
         timestamp to the current timestamp.
 
@@ -187,9 +205,9 @@ class Pushover:
             if key not in Pushover.message_keywords:
                 raise ValueError("{0}: invalid message parameter".format(key))
             elif key == "timestamp" and value is True:
-                    payload[key] = int(time.time())
+                payload[key] = int(time.time())
             elif key == "sound" and value not in self.sounds:
-                    raise ValueError("{0}: invalid sound".format(value))
+                raise ValueError("{0}: invalid sound".format(value))
             else:
                 payload[key] = value
 
