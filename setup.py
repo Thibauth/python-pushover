@@ -18,6 +18,5 @@ setup(
     packages=["pushover"],
     entry_points={"console_scripts": ["pushover = pushover.cli:main"]},
     install_requires=["requests>=1.0"],
-    use_2to3=True,
     license="GNU GPLv3",
 )
