@@ -1,4 +1,8 @@
-from ConfigParser import RawConfigParser, NoSectionError, NoOptionError
+try:
+    import configparser
+except ImportError:  # Python 2
+    import ConfigParser as configparser
+
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import os
 from pushover import Pushover
@@ -6,7 +10,7 @@ from pushover import Pushover
 
 def read_config(config_path):
     config_path = os.path.expanduser(config_path)
-    config = RawConfigParser()
+    config = configparser.RawConfigParser()
     params = {"users": {}}
     files = config.read(config_path)
     if not files:
@@ -18,7 +22,7 @@ def read_config(config_path):
             user["user_key"] = config.get(name, "user_key")
             try:
                 user["device"] = config.get(name, "device")
-            except NoOptionError:
+            except configparser.NoOptionError:
                 user["device"] = None
             params["users"][name] = user
     return params
