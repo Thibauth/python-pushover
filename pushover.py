@@ -83,7 +83,7 @@ class MessageRequest(Request):
         if payload.get("priority", 0) == 2:
             self.url = RECEIPT_URL + self.answer["receipt"]
             self.status["done"] = False
-            for param, when in MessageRequest.params.iteritems():
+            for param, when in MessageRequest.params.items():
                 self.status[param] = False
                 self.status[when] = 0
 
@@ -108,7 +108,7 @@ class MessageRequest(Request):
         """
         if not self.status["done"]:
             r = Request("get", self.url + ".json", {"token": self.payload["token"]})
-            for param, when in MessageRequest.params.iteritems():
+            for param, when in MessageRequest.params.items():
                 self.status[param] = bool(r.answer[param])
                 self.status[when] = int(r.answer[when])
             for param in ["acknowledged_by", "acknowledged_by_device"]:
@@ -201,7 +201,7 @@ class Pushover(object):
         """
 
         payload = {"message": message, "user": user, "token": self.token}
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             if key not in Pushover.message_keywords:
                 raise ValueError("{0}: invalid message parameter".format(key))
             elif key == "timestamp" and value is True:
@@ -225,7 +225,7 @@ class Pushover(object):
         """
         payload = {"user": user, "token": self.token}
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             if key not in Pushover.glance_keywords:
                 raise ValueError("{0}: invalid glance parameter".format(key))
             else:
